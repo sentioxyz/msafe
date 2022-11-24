@@ -5,10 +5,10 @@ import { aptos, EventTracker } from "@sentio/sdk";
 import { code } from "@sentio/sdk/lib/builtin/aptos/0x1";
 import { isMSafeAddress } from "./util";
 
-const wallet_tracker = EventTracker.register("wallets_registered")
-const register_finished_tracker = EventTracker.register("safe_registered")
-const safe_failed_tacker = EventTracker.register("safe_failed")
-const deployer_tracker = EventTracker.register("deployer")
+const trackerOption = { unique: true, totalByDay: false }
+// const wallet_tracker = EventTracker.register("wallets_registered", trackerOption)
+const register_finished_tracker = EventTracker.register("safe_registered", trackerOption)
+const deployer_tracker = EventTracker.register("deployer", trackerOption)
 
 for (const env of [main, test]) {
   const startVersion = env === main ? 0 : 234030000
@@ -17,7 +17,7 @@ for (const env of [main, test]) {
   // https://explorer.aptoslabs.com/txn/25061073/payload
   env.registry.bind({startVersion})
     .onEntryRegister((call, ctx) => {
-      wallet_tracker.trackEvent(ctx, {distinctId: ctx.transaction.sender})
+      // wallet_tracker.trackEvent(ctx, {distinctId: ctx.transaction.sender})
       ctx.meter.Counter("num_entry_register").add(1)
     })
 
@@ -41,17 +41,16 @@ for (const env of [main, test]) {
       const events = aptos.TYPE_REGISTRY.filterAndDecodeEvents<
           main.registry.OwnerMomentumSafesChangeEvent | test.registry.OwnerMomentumSafesChangeEvent>(
           env.registry.OwnerMomentumSafesChangeEvent.TYPE_QNAME,  ctx.transaction.events)
-      ctx.meter.Counter("num_entry_init_wallet_creation").add(1)
-
       if (events.length === 0) {
-        console.warn("OwnerMomentumSafesChangeEvent not found for wallet init", ctx.version)
+        console.error("OwnerMomentumSafesChangeEvent not found for wallet init", ctx.version)
       }
-      const address = events[0].data_typed.msafe
-      if (!(await isMSafeAddress(ctx, address))) {
-        // TODO do we need check those who doesn't have onEventInfo
-        safe_failed_tacker.trackEvent(ctx, {distinctId: address})
-      }
+      ctx.meter.Counter("wallet_created").add(1)
     })
+
+  // aptos.AptosAccountProcessor.bind({ address: env.registry.DEFAULT_OPTIONS.address, network: env.registry.DEFAULT_OPTIONS.network, startVersion })
+  //   .onVersionInterval(async (res, ctx) => {
+  //     const resType = env.creator.PendingMultiSigCreations.TYPE_QNAME
+  //   })
 
   // 4. Number of deployer
   // https://explorer.aptoslabs.com/txn/25261124

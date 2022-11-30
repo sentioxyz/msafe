@@ -33,6 +33,9 @@ for (const env of [main, test]) {
           ctx.meter.Counter("num_event_info_not_msafe").add(1)
         }
       })
+      .onEventTransaction((evt, ctx) => {
+        ctx.meter.Counter("num_event_transaction").add(1)
+      })
 
   // 3. Momentum Safe failed registration
   // https://explorer.aptoslabs.com/txn/0x3df4a5048d0348593b36046420b9fef3dcf26092d62e7029458b32ad35868469/events

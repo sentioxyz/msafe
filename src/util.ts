@@ -5,8 +5,8 @@ import { momentum_safe as test_momentum_safe  } from "./types/aptos/testnet/msaf
 import { aptos } from "@sentio/sdk";
 import { AptosNetwork } from "@sentio/sdk/lib/aptos";
 
-const mainnetClient = new AptosClient("http://aptos-mainnet-node-http.nodes:8080")
-const testnetClient = new AptosClient("https://aptos-testnet.nodereal.io/v1/6ef43ad420334714b6f3d332079ac0f4/v1")
+export const mainnetClient = new AptosClient("http://aptos-mainnet-node-http.nodes:8080")
+export const testnetClient = new AptosClient("https://aptos-testnet.nodereal.io/v1/6ef43ad420334714b6f3d332079ac0f4/v1")
 
 const cache = new Map<string, boolean>()
 
@@ -46,3 +46,4 @@ export async function isMSafeAddress(ctx: { network: AptosNetwork, version: bigi
 export function delay(ms: number) {
   return new Promise( resolve => setTimeout(resolve, ms) );
 }
+

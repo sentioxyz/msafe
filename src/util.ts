@@ -2,8 +2,7 @@ import { AptosClient } from "aptos-sdk";
 import { momentum_safe } from "./types/aptos/msafe";
 import { momentum_safe as test_momentum_safe  } from "./types/aptos/testnet/msafe";
 
-import { aptos } from "@sentio/sdk";
-import { AptosNetwork } from "@sentio/sdk/lib/aptos";
+import { AptosNetwork } from "@sentio/sdk-aptos";
 
 export const mainnetClient = new AptosClient("http://aptos-mainnet-node-http.nodes:8080")
 export const testnetClient = new AptosClient("https://aptos-testnet.nodereal.io/v1/6ef43ad420334714b6f3d332079ac0f4/v1")
@@ -16,8 +15,8 @@ export async function isMSafeAddress(ctx: { network: AptosNetwork, version: bigi
   if (value !== undefined) {
     return value
   }
-  const client = ctx.network === aptos.AptosNetwork.MAIN_NET ? mainnetClient : testnetClient
-  const resourceType = ctx.network === aptos.AptosNetwork.MAIN_NET ? momentum_safe.Momentum.TYPE_QNAME : test_momentum_safe.Momentum.TYPE_QNAME
+  const client = ctx.network === AptosNetwork.MAIN_NET ? mainnetClient : testnetClient
+  const resourceType = ctx.network === AptosNetwork.MAIN_NET ? momentum_safe.Momentum.TYPE_QNAME : test_momentum_safe.Momentum.TYPE_QNAME
 
   let lastError: Error | undefined
 

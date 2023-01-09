@@ -1,8 +1,8 @@
 import * as main  from './types/aptos/msafe'
 import * as test  from './types/aptos/testnet/msafe'
 
-import { aptos, Counter, EventTracker, Gauge } from "@sentio/sdk";
-import { code } from "@sentio/sdk/lib/builtin/aptos/0x1";
+import { Counter, EventTracker, Gauge } from "@sentio/sdk";
+import { code } from "@sentio/sdk-aptos/lib/builtin/0x1";
 import { isMSafeAddress, mainnetClient, testnetClient } from "./util";
 import { momentum_safe } from "./types/aptos/msafe";
 import {AptosAccount, BCS, HexString, TxnBuilderTypes } from "aptos-sdk";
@@ -15,7 +15,7 @@ import { DEFAULT_MAINNET_LIST, DEFAULT_TESTNET_LIST } from "@manahippo/coin-list
 import { RawCoinInfo } from "@manahippo/coin-list/src/list";
 import { BigDecimal } from "@sentio/sdk/lib/core/big-decimal";
 import { getPriceByType } from "@sentio/sdk/lib/utils/price";
-import { APTOS_MAINNET_ID, APTOS_TESTNET_ID } from "@sentio/sdk/lib/utils/chain";
+import { TYPE_REGISTRY } from "@sentio/sdk-aptos";
 
 const trackerOption = { unique: true, totalByDay: false }
 // const wallet_tracker = EventTracker.register("wallets_registered", trackerOption)
@@ -99,7 +99,7 @@ for (const env of [main
   // https://explorer.aptoslabs.com/txn/0x3df4a5048d0348593b36046420b9fef3dcf26092d62e7029458b32ad35868469/events
   env.creator.bind({startVersion})
     .onEntryInitWalletCreation(async (call, ctx) => {
-      const events = aptos.TYPE_REGISTRY.filterAndDecodeEvents<
+      const events = TYPE_REGISTRY.filterAndDecodeEvents<
           main.registry.OwnerMomentumSafesChangeEvent | test.registry.OwnerMomentumSafesChangeEvent>(
           env.registry.OwnerMomentumSafesChangeEvent.TYPE_QNAME,  ctx.transaction.events)
       if (events.length === 0) {

@@ -1,6 +1,6 @@
 import { AptosClient } from "aptos-sdk";
-import { momentum_safe } from "./types/aptos/msafe";
-import { momentum_safe as test_momentum_safe  } from "./types/aptos/testnet/msafe";
+import { momentum_safe } from "./types/aptos/msafe.js";
+import { momentum_safe as test_momentum_safe  } from "./types/aptos/testnet/msafe.js";
 
 import { AptosNetwork } from "@sentio/sdk-aptos";
 

@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
+    "importHelpers": true,
     "alwaysStrict": true,
     "sourceMap": true,
-    "target": "esnext",
+    "target": "es2022",
     "esModuleInterop": true,
     "noImplicitReturns": false,
     "noImplicitAny": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "nodenext",
     "strictNullChecks": true,
     "stripInternal": true,
     "noFallthroughCasesInSwitch": true,
@@ -17,5 +18,7 @@
     "rootDir": "./src",
     "skipLibCheck": true
   },
-  "exclude": ["dist"]
+  "exclude": ["dist",
+    "jest.config.ts", "tsup.config.ts"
+  ]
 }

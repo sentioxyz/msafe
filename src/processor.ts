@@ -2,7 +2,7 @@ import * as main  from './types/aptos/msafe.js'
 import * as test  from './types/aptos/testnet/msafe.js'
 
 import { Counter, EventTracker, Gauge } from "@sentio/sdk";
-import { code } from "@sentio/sdk-aptos/builtin/0x1";
+import { code } from "@sentio/sdk/aptos/builtin/0x1";
 import { isMSafeAddress, mainnetClient, testnetClient } from "./util.js";
 import { momentum_safe } from "./types/aptos/msafe.js";
 import {AptosAccount, BCS, HexString, TxnBuilderTypes } from "aptos-sdk";
@@ -10,12 +10,11 @@ import {AptosAccount, BCS, HexString, TxnBuilderTypes } from "aptos-sdk";
 // @ts-ignore
 import { MSafeTransaction } from "@sentio/msafe/lib/momentum-safe/msafe-txn";
 // import { App } from "@manahippo/coin-list/dist/lib/coin_list/coin_list";
-// @ts-ignore
 import { DEFAULT_MAINNET_LIST, DEFAULT_TESTNET_LIST,RawCoinInfo } from "@manahippo/coin-list";
 
 import { BigDecimal } from "@sentio/sdk";
 // import { getPriceByType } from "@sentio/sdk/lib/utils/price";
-import { defaultMoveCoder } from "@sentio/sdk-aptos";
+import { defaultMoveCoder } from "@sentio/sdk/aptos";
 
 const trackerOption = { unique: true, totalByDay: false }
 // const wallet_tracker = EventTracker.register("wallets_registered", trackerOption)

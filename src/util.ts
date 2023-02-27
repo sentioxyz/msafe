@@ -2,9 +2,9 @@ import { AptosClient } from "aptos-sdk";
 import { momentum_safe } from "./types/aptos/msafe.js";
 import { momentum_safe as test_momentum_safe  } from "./types/aptos/testnet/msafe.js";
 
-import { AptosNetwork } from "@sentio/sdk/aptos";
+import { AptosNetwork, getAptosClient } from "@sentio/sdk/aptos";
 
-export const mainnetClient = new AptosClient("http://aptos-mainnet-node-http.nodes:8080")
+export const mainnetClient = getAptosClient()! // new AptosClient("http://aptos-mainnet-node-http.nodes:8080")
 export const testnetClient = new AptosClient("https://aptos-testnet.nodereal.io/v1/6ef43ad420334714b6f3d332079ac0f4/v1")
 
 const cache = new Map<string, boolean>()

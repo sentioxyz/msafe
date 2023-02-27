@@ -1,7 +1,7 @@
 import * as main  from './types/aptos/msafe.js'
 import * as test  from './types/aptos/testnet/msafe.js'
 
-import { Counter, EventTracker, Gauge } from "@sentio/sdk";
+import { Counter } from "@sentio/sdk";
 import { code } from "@sentio/sdk/aptos/builtin/0x1";
 import { isMSafeAddress, mainnetClient, testnetClient } from "./util.js";
 import { momentum_safe } from "./types/aptos/msafe.js";
@@ -16,13 +16,13 @@ import { BigDecimal } from "@sentio/sdk";
 // import { getPriceByType } from "@sentio/sdk/lib/utils/price";
 import { defaultMoveCoder } from "@sentio/sdk/aptos";
 
-const trackerOption = { unique: true, totalByDay: false }
+// const trackerOption = { unique: true, totalByDay: false }
 // const wallet_tracker = EventTracker.register("wallets_registered", trackerOption)
-const register_finished_tracker = EventTracker.register("safe_registered", trackerOption)
-const deployer_tracker = EventTracker.register("deployer", trackerOption)
+// const register_finished_tracker = EventTracker.register("safe_registered", trackerOption)
+// const deployer_tracker = EventTracker.register("deployer", trackerOption)
 
 const movement = Counter.register("apt_coin_move", { sparse: true })
-const txbreakdwon = Counter.register("tx_breakdown", { sparse: true })
+// const txbreakdwon = Counter.register("tx_breakdown", { sparse: true })
 
 for (const env of [main
   // , test
@@ -50,7 +50,7 @@ for (const env of [main
       .onEventInfo(async (event, ctx) => {
         const address = ctx.transaction.sender
         if (await isMSafeAddress(ctx, address)) {
-          register_finished_tracker.trackEvent(ctx, {distinctId: address})
+          ctx.eventLogger.emit("Register Finished", {distinctId: address})
           ctx.meter.Counter("num_event_info").add(1)
         } else {
           ctx.meter.Counter("num_event_info_not_msafe").add(1)
@@ -68,7 +68,8 @@ for (const env of [main
         const tx = TxnBuilderTypes.RawTransaction.deserialize(deserializer)
         // @ts-ignore
         const entry = tx.payload.value as TxnBuilderTypes.EntryFunction
-        txbreakdwon.add(ctx, 1, {account: evt.guid.account_address, func: entry.function_name.value})
+        // txbreakdwon.add(ctx, 1, {account: evt.guid.account_address, func: entry.function_name.value})
+        ctx.eventLogger.emit("Transaction", {distinctId: evt.guid.account_address, value: entry.function_name.value})
 
         if (entry.function_name.value !== "transfer") {
           return
@@ -123,9 +124,9 @@ for (const env of [main
     .onEntryPublishPackageTxn(async (call, ctx) => {
       const address = ctx.transaction.sender
       if (await isMSafeAddress(ctx, address)) {
-        deployer_tracker.trackEvent(ctx, {distinctId: address})
+        ctx.eventLogger.emit("Deploy", {distinctId: address})
         ctx.meter.Counter("num_deploys").add(1)
-        ctx.logger.info(`deploy use msafe: version: ${ctx.version} , sender: ${ctx.transaction.sender} `)
+        // ctx.logger.info(`deploy use msafe: version: ${ctx.version} , sender: ${ctx.transaction.sender} `)
       }
     })
 }

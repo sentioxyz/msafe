@@ -14,20 +14,21 @@ describe('Test Processor', () => {
   })
 
   test('check transaction', async () => {
-    const request: ProcessBindingsRequest = {
-      bindings: [
-        {
-          data: {
-            aptEvent: {
-              transaction: tx3
-            }
-          },
-          handlerIds: [ 1 ],
-          handlerType: HandlerType.APT_EVENT,
-        },
-      ],
-    }
-    const res = await service.processBindings(request)
+    // const request: ProcessBindingsRequest = {
+    //   bindings: [
+    //     {
+    //       data: {
+    //         aptEvent: {
+    //           transaction: tx3
+    //         }
+    //       },
+    //       handlerIds: [ 1 ],
+    //       handlerType: HandlerType.APT_EVENT,
+    //     },
+    //   ],
+    // }
+    const res = await service.aptos.testEvent(tx4 as any, 0)
+    console.log(res)
 
     // service.processBindings(request)
   })
@@ -64,5 +65,8 @@ describe('Test Processor', () => {
           }
         ],
     "hash":"0x8cf3085b38e984f578a03adef82d025c13cc354ae933c9ebaf564cb0fdc4da67","state_root_hash":"","id":"","sender":"0x7f765c40e130e08e966665529e2173e7dae391a5d26382f3da1fa159c18d388e","payload":{"type":"entry_function_payload","type_arguments":[],"arguments":["0xf0c72440ff8493c383b3f97ea79e5ffc136b132567de27eb442d90c2b6534448",0,"0xb5e97db07fa0bd0e5598aa3643a9bc6f6693bddc1a9fec9e674a461eaa00b193f0c72440ff8493c383b3f97ea79e5ffc136b132567de27eb442d90c2b653444806000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e74087472616e73666572000220f1b672b31daf44cb1cafa92fb8643a6826a88256f3149d1c86aa8af03c2acb4408404b4c0000000000a00f00000000000064000000000000002307221d0100000001","0xd9066d58e76bed4559f55f51b8ce5c13980ec0787ce2a3df3d66e61d1e037c38210b5a80290e1cbd14d1306bb51e0b5338b77601949416ea17b47424b1014e07"],"code":{"bytecode":""},"function":"0xaa90e0d9d16b63ba4a289fb0dc8d1b454058b21c9b5c76864f825d5c1f32582e::momentum_safe::init_transaction"},"vm_status":"Executed successfully","accumulator_root_hash":"0","max_gas_amount":"50000","gas_unit_price":"120","version":"66196570"}
+
+
+  const tx4 = {"id":"","round":"0","max_gas_amount":"12000","event_root_hash":"0x5dd7cdde86caa418a04c46ab7f1b62e124e7bb453492e03f76121804096c9ca2","gas_used":"5607","vm_status":"Executed successfully","accumulator_root_hash":"0","gas_unit_price":"110","expiration_timestamp_secs":"1708923153","events":[],"state_root_hash":"","success":true,"sender":"0x4c8fcb23e570a969a36bbc034a11225818f15650ba00516c5332d2823fe62405","type":"user_transaction","version":"93588926","changes":[],"timestamp":"1677387170290291","hash":"0x09884d0d7fc708ea415fa8f5a1568a602384754ad0557397e40d46b3e0f44b75","previous_block_votes":[],"proposer":"","sequence_number":"0","payload":{"arguments":["0x4d6f6d656e74756d2053616665"],"code":{"bytecode":""},"function":"0xaa90e0d9d16b63ba4a289fb0dc8d1b454058b21c9b5c76864f825d5c1f32582e::momentum_safe::register","type":"entry_function_payload","type_arguments":[]},"secondary_signers":[]}
 
 })

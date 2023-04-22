@@ -13,7 +13,7 @@
     "stripInternal": true,
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
-    "noEmitOnError": true,
+    "noEmitOnError": false,
     "outDir": "dist",
     "rootDir": "./src",
     "skipLibCheck": true

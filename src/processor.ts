@@ -10,11 +10,12 @@ import {AptosAccount, BCS, HexString, TxnBuilderTypes } from "aptos-sdk";
 // @ts-ignore
 import { MSafeTransaction } from "@sentio/msafe/lib/momentum-safe/msafe-txn";
 // import { App } from "@manahippo/coin-list/dist/lib/coin_list/coin_list";
-import { DEFAULT_MAINNET_LIST, DEFAULT_TESTNET_LIST,RawCoinInfo } from "@manahippo/coin-list";
+// import { DEFAULT_MAINNET_LIST, DEFAULT_TESTNET_LIST,RawCoinInfo } from "@manahippo/coin-list";
 
 import { BigDecimal } from "@sentio/sdk";
 // import { getPriceByType } from "@sentio/sdk/lib/utils/price";
 import { defaultMoveCoder } from "@sentio/sdk/aptos";
+import { getPrice, SimpleCoinInfo, whitelistCoins } from "@sentio/sdk/aptos/ext";
 
 // const trackerOption = { unique: true, totalByDay: false }
 // const wallet_tracker = EventTracker.register("wallets_registered", trackerOption)
@@ -29,12 +30,12 @@ for (const env of [main
 ]) {
   const startVersion = env === main ? 0 : 234030000
 
-  const list = env === main ? DEFAULT_MAINNET_LIST : DEFAULT_TESTNET_LIST
+  const tokenMap =  whitelistCoins()
 
-  const tokenMap = new Map<string, RawCoinInfo>()
-  for (const info of list) {
-    tokenMap.set(info.token_type.type, info)
-  }
+  // const tokenMap = new Map<string, SimpleCoinInfo>()
+  // for (const info of list) {
+  //   tokenMap.set(info.token_type.type, info)
+  // }
 
   // 1. Wallets registered
   // https://explorer.aptoslabs.com/txn/25061073/payload
@@ -50,7 +51,10 @@ for (const env of [main
       .onEventInfo(async (event, ctx) => {
         const address = ctx.transaction.sender
         if (await isMSafeAddress(ctx, address)) {
-          ctx.eventLogger.emit("Register Finished", {distinctId: address})
+          ctx.eventLogger.emit("Register Finished", {
+            distinctId: address,
+            account: address
+          })
           ctx.meter.Counter("num_event_info").add(1)
         } else {
           ctx.meter.Counter("num_event_info_not_msafe").add(1)
@@ -69,9 +73,13 @@ for (const env of [main
         // @ts-ignore
         const entry = tx.payload.value as TxnBuilderTypes.EntryFunction
         // txbreakdwon.add(ctx, 1, {account: evt.guid.account_address, func: entry.function_name.value})
-        ctx.eventLogger.emit("Transaction", {distinctId: evt.guid.account_address, value: entry.function_name.value})
+
 
         if (entry.function_name.value !== "transfer") {
+          ctx.eventLogger.emit("Transaction", {
+            distinctId: evt.guid.account_address,
+            function: entry.function_name.value
+          })
           return
         }
         if (entry.ty_args.length == 0) {
@@ -81,9 +89,9 @@ for (const env of [main
         }
 
         const coinTypeStruct = entry.ty_args[0] as TxnBuilderTypes.TypeTagStruct
-        const moduleAddress = uintArrayToBigint(coinTypeStruct.value.address.address)
+        const moduleAddress = uintArrayToAddress(coinTypeStruct.value.address.address)
 
-        const coin = "0x" + moduleAddress.toString(16) + "::" + coinTypeStruct.value.module_name.value + "::" + coinTypeStruct.value.name.value
+        const coin =  moduleAddress + "::" + coinTypeStruct.value.module_name.value + "::" + coinTypeStruct.value.name.value
 
         // if (coin !== "0x1::aptos_coin::AptosCoin") {
         //   return
@@ -94,19 +102,34 @@ for (const env of [main
         }
 
         // const to = bytesToNumber(entry.args[0]).toString(16)
-        const amount = BigDecimal(bytesToNumber(entry.args[1]).toString()).div(BigDecimal(10).pow(tokenInfo.decimals))
+        const amount = bytesToNumber(entry.args[1]).scaleDown(tokenInfo.decimals)
         // console.log(evt.guid.account_address, to, amount)
 
+        const price = await getPrice(coin, parseInt(ctx.transaction.timestamp))
+        if (price === 0) {
+          console.log(coin, ctx.transaction.timestamp)
+        }
+        const value = amount.multipliedBy(price)
+
         movement.add(ctx, amount, { coin: tokenInfo.symbol })
+
+        ctx.eventLogger.emit("Transaction", {
+          distinctId: evt.guid.account_address,
+          function: entry.function_name.value,
+          symbol: tokenInfo.symbol,
+          sender: tx.sender.toHexString().toString(),
+          coin,
+          amount,
+          value
+        })
       })
 
   // 3. Momentum Safe failed registration
   // https://explorer.aptoslabs.com/txn/0x3df4a5048d0348593b36046420b9fef3dcf26092d62e7029458b32ad35868469/events
   env.creator.bind({startVersion})
     .onEntryInitWalletCreation(async (call, ctx) => {
-      const events = defaultMoveCoder().filterAndDecodeEvents<
-          main.registry.OwnerMomentumSafesChangeEvent | test.registry.OwnerMomentumSafesChangeEvent>(
-          env.registry.OwnerMomentumSafesChangeEvent.TYPE_QNAME,  ctx.transaction.events)
+      const events = await ctx.coder.filterAndDecodeEvents(
+          env.registry.OwnerMomentumSafesChangeEvent.type(),  ctx.transaction.events)
       if (events.length === 0) {
         console.error("OwnerMomentumSafesChangeEvent not found for wallet init", ctx.version)
       }
@@ -124,7 +147,10 @@ for (const env of [main
     .onEntryPublishPackageTxn(async (call, ctx) => {
       const address = ctx.transaction.sender
       if (await isMSafeAddress(ctx, address)) {
-        ctx.eventLogger.emit("Deploy", {distinctId: address})
+        ctx.eventLogger.emit("Deploy", {
+          distinctId: address,
+          account: address
+        })
         ctx.meter.Counter("num_deploys").add(1)
         // ctx.logger.info(`deploy use msafe: version: ${ctx.version} , sender: ${ctx.transaction.sender} `)
       }
@@ -132,13 +158,17 @@ for (const env of [main
 }
 
 function bytesToNumber(byteArray: Uint8Array) {
-  let result = 0n;
-  for (let i = byteArray.length - 1; i >= 0; i--) {
-    result = (result * 256n) + BigInt(byteArray[i]);
-  }
+  return BigInt("0x" + Buffer.from(byteArray.reverse()).toString('hex'));
 
-  return result;
+  //
+  // let result = 0n;
+  // for (let i = byteArray.length - 1; i >= 0; i--) {
+  //   result = (result * 256n) + BigInt(byteArray[i]);
+  // }
+
+  // return result;
 }
-function uintArrayToBigint(uintArray: Uint8Array) {
-  return uintArray.reduce((acc, byte) => (acc << 8n) + BigInt(byte), 0n);
+function uintArrayToAddress(uintArray: Uint8Array) {
+  // return "0x" + Buffer.from(uintArray).toString('hex')
+  return "0x"+uintArray.reduce((acc, byte) => (acc << 8n) + BigInt(byte), 0n).toString(16);
 }

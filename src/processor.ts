@@ -25,9 +25,12 @@ import { getPrice, SimpleCoinInfo, whitelistCoins } from "@sentio/sdk/aptos/ext"
 const movement = Counter.register("apt_coin_move", { sparse: true })
 // const txbreakdwon = Counter.register("tx_breakdown", { sparse: true })
 
-for (const env of [main
-  // , test
-]) {
+const chains = [
+    main,
+  // test
+]
+
+for (const env of chains) {
   const startVersion = env === main ? 0 : 234030000
 
   const tokenMap =  whitelistCoins()
@@ -71,9 +74,19 @@ for (const env of [main
 
         const tx = TxnBuilderTypes.RawTransaction.deserialize(deserializer)
         // @ts-ignore
+        if (!tx?.payload) {
+          console.log("no payload: ", ctx.transaction.version)
+          return
+        }
+
+        // @ts-ignore
         const entry = tx.payload.value as TxnBuilderTypes.EntryFunction
         // txbreakdwon.add(ctx, 1, {account: evt.guid.account_address, func: entry.function_name.value})
 
+        if (!entry.function_name) {
+          console.log("no function anme: ", ctx.transaction.version)
+          return
+        }
 
         if (entry.function_name.value !== "transfer") {
           ctx.eventLogger.emit("Transaction", {
@@ -169,6 +182,6 @@ function bytesToNumber(byteArray: Uint8Array) {
   // return result;
 }
 function uintArrayToAddress(uintArray: Uint8Array) {
-  // return "0x" + Buffer.from(uintArray).toString('hex')
-  return "0x"+uintArray.reduce((acc, byte) => (acc << 8n) + BigInt(byte), 0n).toString(16);
+  return "0x" + Buffer.from(uintArray).toString('hex')
+  // return "0x"+uintArray.reduce((acc, byte) => (acc << 8n) + BigInt(byte), 0n).toString(16);
 }

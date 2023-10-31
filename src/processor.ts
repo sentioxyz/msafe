@@ -15,7 +15,7 @@ import { MSafeTransaction } from "@sentio/msafe/lib/momentum-safe/msafe-txn";
 import { BigDecimal } from "@sentio/sdk";
 // import { getPriceByType } from "@sentio/sdk/lib/utils/price";
 import { defaultMoveCoder } from "@sentio/sdk/aptos";
-import { getPrice, SimpleCoinInfo, whitelistCoins } from "@sentio/sdk/aptos/ext";
+import { getPrice, whitelistCoins } from "@sentio/sdk/aptos/ext";
 
 // const trackerOption = { unique: true, totalByDay: false }
 // const wallet_tracker = EventTracker.register("wallets_registered", trackerOption)
@@ -91,7 +91,7 @@ for (const env of chains) {
         if (entry.function_name.value !== "transfer") {
           ctx.eventLogger.emit("Transaction", {
             distinctId: evt.guid.account_address,
-            function: entry.function_name.value
+            function: entry.function_name.value,
           })
           return
         }

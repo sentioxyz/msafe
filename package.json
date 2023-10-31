@@ -11,10 +11,10 @@
     "postinstall": "sentio gen"
   },
   "dependencies": {
-    "@sentio/sdk": "^2.13.3-rc.5"
+    "@sentio/sdk": "^2.26.2"
   },
   "devDependencies": {
-    "@sentio/cli": "^2.7.1-rc.2",
+    "@sentio/cli": "^2.11.6",
     "jest": "^29.5.0",
     "ts-jest": "^29.1.0",
     "typescript": "^5.0.4"
